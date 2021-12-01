@@ -2,6 +2,13 @@ from gurobipy import Model, GRB
 from typing import List
 
 
+def create_model():
+    model = Model()
+    model.Params.Cuts = 0
+    model.Params.Heuristics = 0
+    model.Params.Presolve = 0
+    return model
+
 class KnapSack:
     """
     An implementation of a Knapsack problem.
@@ -23,7 +30,7 @@ class KnapSack:
         """
         Solve the relaxation of the knapsack
         """
-        model = Model()
+        model = create_model()
         x = model.addVars(self.n)
 
         # Set objective constraint
@@ -46,7 +53,7 @@ class KnapSack:
         """
         Solves the regular knapsack.
         """
-        model = Model()
+        model = create_model()
         x = model.addVars(self.n, vtype=GRB.BINARY)
 
         # Set objective constraint
