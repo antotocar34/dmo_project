@@ -1,0 +1,63 @@
+\documentclass{article}
+
+\usepackage[a4paper]{geometry}
+\usepackage{graphicx}
+\usepackage{wrapfig}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{bm}
+\usepackage{mathtools}
+\usepackage{microtype}
+\usepackage{enumerate}
+\usepackage{upgreek}
+\usepackage{float}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{svg}
+\usepackage[]{xcolor}
+\usepackage{setspace}
+\usepackage{pdfpages}
+%\usepackage{fullpage}
+\usepackage[justification=centering]{caption}
+\usepackage{natbib}
+\bibliographystyle{apalike}
+\usepackage{titlesec}
+\usepackage{import}
+\usepackage[hyphens]{url}
+\newcommand{\eq}{&=}
+\newcommand\nt{\addtocounter{equation}{1}\tag{\theequation}}
+
+\begin{document}
+\maketitle
+\noindent
+
+\section*{Task 4}%
+
+Consider the cover 
+\[
+C = \{ i \;|\; y_i^* = 1\}.
+\]
+This is indeed a cover, since the $\mathbf{y}^*$ solution must satisfy
+\[
+\sum_{i \in C}^{} w_i = \sum_{i \in C}^{} w_i + \sum_{i \notin C}^{} w_i(0) =  \sum_{i=1}^{n} w_i y_i^* > c.
+\]
+
+Now if $\sum_{i=1}^{n}(1 - x_i^*)y_{i}^* < 1$, we can make the following inference
+\begin{align*}
+   \sum_{i=1}^{n} (1 - x_i^*)y_i^* &< 1 \\ 
+   \sum_{i \in C} (1 - x_i^*) &< 1 \\ 
+  |C| -\sum_{i \in C} x_i^* &< 1 \\ 
+  -\sum_{i \in C} x_i^* &< 1 - |C|\\ 
+  \sum_{i \in C} x_i^* &> |C| - 1\\ 
+\end{align*}
+Therefore $\mathbf{x}^*$ violates the inequality corresponding to $C$.
+So to construct a cover, one must simply choose the variables where $y^*_i = 1$.
+
+
+
+%\newpage
+%\bibliography{/home/carneca/Documents/Latex/bibmaster.bib}
+\end{document}
