@@ -2,9 +2,9 @@ from typing import List
 
 from gurobipy import GRB, Model
 
-n = 3
-w = [2, 3, 10]
-p = [1, 2, 20]
+n = 2
+w = [3, 10]
+p = [2, 20]
 c = 9
 
 
@@ -38,8 +38,8 @@ def make_cover_inequality(C: List[int]):
 
     return lambda x: sum([x[i-1] for i in range(len(C))]) <= len(C) - 1
 
-C = [3] # Define a cover, denotes variable 2 and 3
+C = [2] # Define a cover, denotes variable 2 and 3
 inequality = make_cover_inequality(C)
 
 print(f"Optimal solution is {solution}")
-print(f"Does the solution satisfy the cover inequality corresponding to {C}?\n\t{inequality(solution)}")
+print(f"Does the solution satisfy the cover inequality corresponding to cover {C}?\n\t{inequality(solution)}")
