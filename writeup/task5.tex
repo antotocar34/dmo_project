@@ -28,33 +28,39 @@
 \usepackage{import}
 \usepackage[hyphens]{url}
 
+\newcommand{\incfig}[2][1]{%
+\fontsize{15pt}{16pt}\selectfont 
+    \def\svgwidth{#1\columnwidth}
+    \import{./figures/}{#2.pdf_tex}
+}
 % \pdfsuppresswarningpagegroup=1
+
+\newtheorem{lemma}{Lemma}[section]
+\newtheorem{theorem}{Theorem}[section]
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}[section]
+\newtheorem*{definition*}{Definition}
+\theoremstyle{exercise}
+\newtheorem{exercise}{Exercise}[section]
+\theoremstyle{remark}
+\newtheorem*{remark}{Remark}
+
+% Font
+% \usepackage[T1]{fontenc}
+% \usepackage[utf8]{inputenc}
+% \usepackage[urw-garamond]{mathdesign}
+
+\newcommand{\eq}{&=}
+\newcommand\nt{\addtocounter{equation}{1}\tag{\theequation}}
 
 \begin{document}
 
-\subsection*{Task 2}
 
-Consider the classical knapsack problem program with the following parameters:
-\begin{align*}
-    n &= 2 \\
-    c &= 9\\
-    \mathbf{w} &= 
-\begin{bmatrix}
-    3 & 10 \\
-\end{bmatrix}^{T} \\
-    \mathbf{p} &= 
-\begin{bmatrix}
-    2 & 20 \\
-\end{bmatrix}^{T} \\
-\end{align*}.
-The solution to this model, which we verify with gurobi is
-\[
-    \mathbf{x}^* = [0, 0.9].
-\]
-Obviously $C = \{2\}$ is a cover (since $w_2 > c$), and the corresponding cover
-inequality is $x_2 \leq 0$; which $x^*_2$ violates.
+\subsection*{Task 5}
 
 
 
 
+%\newpage
+%\bibliography{/home/carneca/Documents/Latex/bibmaster.bib}
 \end{document}

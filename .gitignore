@@ -1,3 +1,4 @@
 .envrc
 pyproject.toml
 poetry.lock
+*.synctex.gz
