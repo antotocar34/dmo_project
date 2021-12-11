@@ -57,9 +57,34 @@
 
 
 \subsection*{Task 5}
+So the strict knapsack problem is represented as
+\begin{align*}
+    \max \;\; &\sum_{i=1}^{n} \lambda_{i} y_i  \\
+    &\sum_{i=1}^{n} \omega_{i} y_i < C  \\
+    &y_i \in \{0,1\} \quad \forall i \in \{1, \ldots, n\} 
+\end{align*}
+With profits $\lambda$, weights $\omega$ and capacity $C$.
 
-
-
+The connection between the above and the cover inequality model is easy to see.
+So let $\lambda_i = -( 1- x^*_i)$, $\omega_{i} = -w_i$ and $C = -c$.
+Then the above model can be written as
+\begin{align*}
+    \max \;\; &\sum_{i=1}^{n} -(1 - x^*_i) y_i  \\
+    &\sum_{i=1}^{n} -w_i y_i < -c_i  \\
+    &y_i \in \{0,1\} \quad\forall i \in \{1, \ldots, n\} 
+\end{align*}
+Using basic mathematical properties, we can see that we recover the cover inequality model.
+\begin{align*}
+    \min \;\; &\sum_{i=1}^{n} (1 - x^*_i) y_i  \\
+    &\sum_{i=1}^{n} w_i y_i > c_i  \\
+    &y_i \in \{0,1\} \quad \forall i \in \{1, \ldots, n\} 
+\end{align*}
+Now a constraint with a strict inequality like $\mathbf{a}^{T}\mathbf{x} < b$ can be made into one with a weak inequality with the following procedures.
+\begin{enumerate}[1.]
+    \item Pick some $\varepsilon > 0$ that is small enough such that any number $i$ in the computation is equivalent to $i \pm \varepsilon$. % What does equivalent mean?
+    \item Let $\mathbf{a}^{T}\mathbf{x} \leq b - \varepsilon$.
+    \item We must have that $\mathbf{a}^{T}\mathbf{x} \leq b - \varepsilon$ is equivalent to $\mathbf{a}^{T}\mathbf{x} < b$, since any TODO MAKE THIS MAKE SENSE.
+\end{enumerate}
 
 %\newpage
 %\bibliography{/home/carneca/Documents/Latex/bibmaster.bib}
