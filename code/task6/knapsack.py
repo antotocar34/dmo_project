@@ -1,5 +1,9 @@
 from gurobipy import Model, GRB
 from typing import List
+from collections import deque
+import numpy as np
+import matplotlib.pyplot as plt
+import random
 
 
 def create_model():
@@ -25,6 +29,10 @@ class KnapSack:
         self.c = c
         self.w = w
         self.p = p
+
+    def profit(self, x):
+        assert(len(x) == len(self.p)), f"{x}\n{p}"
+        return sum(self.p[i]*x[i] for i in range(self.n))
 
     def optimize_linear_relaxation(self) -> List[int]:
         """
@@ -66,6 +74,28 @@ class KnapSack:
 
         return model.x
 
+    def greedy_solve(self):
+        """
+        Given a capacity and a list of density ordered vertices,
+        return a list of variables until the cumulative sum
+        of the next one violates the capacity.
+        """
+        # Order variable indices by density
+        density_vars = sorted(list(range(self.n)), key=(lambda i: self.p[i] / self.w[i]), reverse=True)
+
+        keep = [] # Variables you are keeping
+        running_total = self.c
+        for i in density_vars:
+            if (running_total - self.w[i] == 0):
+                keep.append(i)
+                return keep
+            if (running_total - self.w[i]) < 0:
+                continue
+            keep.append(i)
+            running_total -= self.w[i]
+        
+        return [1 if x in keep else 0 for x in range(self.n)]
+
     def solve_cover_problem(self, solution: List[int]) -> List[int]:
         """
         Given an existing solution, return a cover, whose inequality the 
@@ -78,9 +108,7 @@ class KnapSack:
             p=[-(1 - x) for x in solution],
             w=[-1*v for v in self.w]
         )
-        # TODO Is this model always feasible? We should handle the case where it it is not.
-        # Yes, this model should always be feasible (you can always set y^*_i to 1).
-        # TODO make a method for a greedy algorithm
-        cover = coverknapsack.optimize()
+
+        cover = coverknapsack.greedy_solve()
 
         return cover
