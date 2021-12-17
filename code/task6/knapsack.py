@@ -1,16 +1,14 @@
-from gurobipy import Model, GRB
 from typing import List
-from collections import deque
-import numpy as np
-import matplotlib.pyplot as plt
-import random
 
+from gurobipy import Model, GRB, GurobiError, Env
 
 def create_model():
     model = Model()
-    model.Params.Cuts = 0
+    model.Params.OutputFlag = 0
     model.Params.Heuristics = 0
     model.Params.Presolve = 0
+    model.Params.Cuts = 0
+    model.Params.Lazyconstraints = 1
     return model
 
 class KnapSack:
@@ -24,63 +22,50 @@ class KnapSack:
     """
     def __init__(self, n: int, c: int, p: List[int], w: List[int]):
         # Checks that all vectors are of correct length.
-        assert [len(p), len(p)] == [n, n]
+        assert [len(p), len(w)] == [n, n]
         self.n = n
         self.c = c
         self.w = w
         self.p = p
-
-    def profit(self, x):
-        assert(len(x) == len(self.p)), f"{x}\n{p}"
+        self.model = create_model()
+      
+    def profit(self, x: List[int]):
+        """
+        Takes a solution and returns the value 
+        of the objective function.
+        """
+        try:
+            assert(len(x) == len(self.p)), f"Solution length: {len(x)}\n Profit vector length: {len(self.p)}"
+        except AssertionError:
+            breakpoint()
         return sum(self.p[i]*x[i] for i in range(self.n))
 
-    def optimize_linear_relaxation(self) -> List[int]:
+
+    def optimize(self, cut: bool =True) -> List[int]:
         """
-        Solve the relaxation of the knapsack
+        Solves the regular knapsack by enumeration if cut = False,
+        and with the cover inequality branch & cut if cut = True
         """
-        model = create_model()
-        x = model.addVars(self.n)
+        self.x = self.model.addVars(self.n, vtype=GRB.BINARY)
 
         # Set objective constraint
-        model.setObjective(x.prod(self.p), sense=GRB.MAXIMIZE)
+        self.model.setObjective(self.x.prod(self.p), sense=GRB.MAXIMIZE)
 
         # Add capacity constraint
-        # TODO Add the small numerical trick
-        model.addConstr(x.prod(self.w) <= self.c)
+        self.model.addConstr(self.x.prod(self.w) <= self.c)
 
-        # Add the 0 <= x_i <= 1 constraint
-        model.addConstrs(x[i] <= 1 for i in range(self.n))
-        model.addConstrs(-x[i] <= 0 for i in range(self.n))
+        if cut:
+          self.model.optimize(lambda model, where: self.mycallback(model, where))
+        else:
+          self.model.optimize()
 
-        # Optimize the model
-        model.optimize()
-        solution = model.x
-        return solution
+        return self.model.x
 
-    def optimize(self) -> List[int]:
+    def greedy_solve(self) -> List[int]:
         """
-        Solves the regular knapsack.
+        As described in task 1
         """
-        model = create_model()
-        x = model.addVars(self.n, vtype=GRB.BINARY)
-
-        # Set objective constraint
-        model.setObjective(x.prod(self.p), sense=GRB.MAXIMIZE)
-
-        # Add capacity constraint
-        model.addConstr(x.prod(self.w) <= self.c)
-
-        model.optimize()
-
-        return model.x
-
-    def greedy_solve(self):
-        """
-        Given a capacity and a list of density ordered vertices,
-        return a list of variables until the cumulative sum
-        of the next one violates the capacity.
-        """
-        # Order variable indices by density
+        # Order variable indices by density.
         density_vars = sorted(list(range(self.n)), key=(lambda i: self.p[i] / self.w[i]), reverse=True)
 
         keep = [] # Variables you are keeping
@@ -88,27 +73,59 @@ class KnapSack:
         for i in density_vars:
             if (running_total - self.w[i] == 0):
                 keep.append(i)
-                return keep
+                break 
             if (running_total - self.w[i]) < 0:
                 continue
             keep.append(i)
             running_total -= self.w[i]
         
-        return [1 if x in keep else 0 for x in range(self.n)]
+        result = [1 if x in keep else 0 for x in range(self.n)]
+        return result
 
     def solve_cover_problem(self, solution: List[int]) -> List[int]:
         """
         Given an existing solution, return a cover, whose inequality the 
-        solution violates.
+        solution violates. If there is no cover return an empty list.
         """
-        # TODO Add the small numerical trick
+        assert len(solution) == self.n
+        # Create the cover knapsack
         coverknapsack = KnapSack(
             n=self.n,
-            c=-1*self.c,
-            p=[-(1 - x) for x in solution],
-            w=[-1*v for v in self.w]
+            c=(sum(self.w) - self.c),
+            p=[(1 - x) for x in solution],
+            w=self.w
         )
 
         cover = coverknapsack.greedy_solve()
+        
+        # Do the variable substitution, as explained in task 5.
+        cover = [1 - y for y in cover.copy()]
 
-        return cover
+        assert len(cover) == coverknapsack.n
+        
+        # If there is no cover return without doing anything.
+        if coverknapsack.profit(cover) > 1:
+          return []
+
+        # list of indices of variables in the cover.
+        cover_indices = [i for i in range(coverknapsack.n) if cover[i] == 1]
+
+        return cover_indices
+      
+    def mycallback(self, model, where):
+      """
+      Function which adds cover constraint if it exists.
+      """
+      if where == GRB.Callback.MIPNODE:        
+        try:
+          # Get fractional solution at a node.
+          x_star = self.model.cbGetNodeRel(model.getVars())
+          cover_indices = self.solve_cover_problem(x_star)
+          if not cover_indices: # If there was no cover just return.
+            return
+
+          # Add cover constraint
+          self.model.cbLazy( sum(self.x[i] for i in cover_indices) <= len(cover_indices) - 1 )
+
+        except GurobiError:
+            pass
